@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+bases:
+  - ../../base
+patchesStrategicMerge:
+  - patch-replicas.yaml
+# Lembre-se de atualizar a tag da imagem para a versão de produção.
+# images:
+#   - name: SEU_NOME_DE_IMAGEM_NO_DEPLOYMENT_BASE
+#     newTag: SUA_TAG_DE_IMAGEM_PARA_PROD

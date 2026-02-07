@@ -1,0 +1,11 @@
+# platform-gitops/infra/victoria-metrics/dev/vmagent-values.yaml
+
+# VMAgent é quem coleta as métricas.
+# Ele precisa apontar para o novo `vmsingle`.
+# O serviço do vmsingle será 'vmsingle-dev-victoria-metrics-single'
+remoteWrite:
+  - url: "http://vmsingle-dev-victoria-metrics-single.dev-monitoring.svc:8429/api/v1/write"
+
+# A configuração de scrape continua a mesma.
+scrape:
+  # ...

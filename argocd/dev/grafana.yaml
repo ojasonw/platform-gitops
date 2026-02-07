@@ -1,0 +1,36 @@
+# platform-gitops/argocd/dev/grafana.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana-dev
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: 'URL_DO_SEU_REPO_GITOPS' # Substitua pela URL do seu repo
+    targetRevision: HEAD
+    path: infra/grafana/dev # Path para os seus values
+
+    helm:
+      valueFiles:
+      - values.yaml
+
+      # --- Início da Mágica ---
+      # Aqui especificamos o chart remoto
+      chart: grafana
+      # E o repositório dele
+      repoURL: https://grafana.github.io/helm-charts
+      targetRevision: 6.50.5
+      # --- Fim da Mágica ---
+
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: dev-monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

@@ -1,0 +1,66 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mysql-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://charts.bitnami.com/bitnami'
+    chart: mysql
+    targetRevision: '9.10.2' # Use uma versão específica do Helm chart
+    helm:
+      valueFiles:
+      - 'values.yaml'
+      # O Argo CD vai buscar o values.yaml a partir do 'path' abaixo
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: dev-infra
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+  # Este application aponta para um repo Helm, mas precisa de um values.yaml
+  # que está no repo GitOps. Para isso, o Argo precisa de uma segunda fonte.
+  # No entanto, a UI/CLI do Argo CD lida melhor com um App por fonte.
+  # A abordagem mais simples é colocar o values.yaml no mesmo repo GitOps
+  # e referenciá-lo indiretamente. O Argo CD Application abaixo
+  # precisa ser ajustado. A forma canônica de fazer isso com ApplicationSet
+  # ou múltiplas fontes pode ser mais complexa.
+  #
+  # Por simplicidade, vamos assumir que o `values.yaml` está em um `repoURL`
+  # que aponta para o seu repo GitOps.
+  # A forma mais comum é ter um repo para os charts e outro para os values.
+  # Para este projeto, vamos manter no mesmo repo e ajustar o `source`
+  #
+  # RECOMENDAÇÃO:
+  # Crie uma "App of Apps" que aponta para o diretório `infra/mysql/dev`
+  # e o `apps/my-service/overlays/dev`.
+  #
+  # Este arquivo é um exemplo para a infra. O `apps.yaml` cuidará dos apps.
+  # Para que este Application do MySQL funcione, o Argo CD precisa do `values.yaml`.
+  # A forma mais limpa é ter um Application que aponte para o repo GitOps
+  # e use o `plugin` do Helm.
+  #
+  # Exemplo de como seria a fonte para o Argo CD buscar o values.yaml
+  # no mesmo repo:
+  # source:
+  #   repoURL: 'URL_DO_SEU_REPO_GITOPS'
+  #   targetRevision: HEAD
+  #   path: infra/mysql/dev
+  #   helm:
+  #     valueFiles:
+  #     - values.yaml
+
+# A configuração acima está comentada porque o ArgoCD Application não suporta
+# múltiplas fontes de git. A melhor abordagem é usar um ApplicationSet ou
+# criar um helm chart "guarda-chuva" que puxe o chart do bitnami como dependência
+# e use o values.yaml local.
+
+# Para manter simples, vamos assumir que você vai aplicar este YAML
+# e o Argo CD vai usar os values default do chart.
+# Você pode popular o `values.yaml` em `infra/mysql/dev`
+# e depois, no Argo CD UI, configurar o App para apontar para o
+# repo GitOps em `infra/mysql/dev` e usar o Helm chart de lá.

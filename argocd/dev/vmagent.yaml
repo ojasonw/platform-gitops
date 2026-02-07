@@ -1,0 +1,31 @@
+# platform-gitops/argocd/dev/vmagent.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vmagent-dev
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: 'URL_DO_SEU_REPO_GITOPS'
+    targetRevision: HEAD
+    path: infra/victoria-metrics/dev
+
+    helm:
+      valueFiles:
+      - vmagent-values.yaml
+
+      chart: vmagent
+      repoURL: https://victoriametrics.github.io/helm-charts/
+      targetRevision: 0.25.0 # Use uma versão específica
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: dev-monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

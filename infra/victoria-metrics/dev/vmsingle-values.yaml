@@ -1,0 +1,14 @@
+# platform-gitops/infra/victoria-metrics/dev/vmsingle-values.yaml
+
+# Para o ambiente de dev, vamos manter a persistência desabilitada.
+server:
+  persistentVolume:
+    enabled: false
+  # Reduzir os recursos para o ambiente de dev
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
