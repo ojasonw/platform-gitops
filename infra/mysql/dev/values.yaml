@@ -1,13 +1,8 @@
-# Valores para o Helm chart do MySQL no ambiente de dev.
-# Forçando a tag da imagem para uma versão válida, pois a padrão do chart está obsoleta.
-image:
-  repository: bitnami/mysql
-  tag: 8.0.36
+# Environment-specific values for MySQL dev.
+auth:
+  rootPassword: "SV5zrDmESnlgDy3GwiE6"
+  database: my_database
 
-# Você pode sobrescrever os valores do chart default aqui.
-# Exemplo:
-# auth:
-#   rootPassword: "seu-password-de-root"
-#   database: "sua-db"
-#   username: "seu-usuario"
-#   password: "sua-senha-de-usuario"
+persistence:
+  enabled: true
+  size: 8Gi

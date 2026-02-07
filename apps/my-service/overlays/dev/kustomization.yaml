@@ -4,6 +4,11 @@ bases:
   - ../../base
 patchesStrategicMerge:
   - patch-replicas.yaml
+# O bloco abaixo será atualizado pela GitHub Action
+images:
+  - name: my-service # Deve ser o mesmo nome do container no deployment base
+    newTag: v1.0.0 # Tag inicial que será substituída
+
 # Você pode adicionar aqui patches de imagem, configmaps, etc.
 # Exemplo de patch de imagem:
 # images:
