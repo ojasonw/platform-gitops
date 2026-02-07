@@ -12,18 +12,17 @@ spec:
     server: 'https://kubernetes.default.svc'
     namespace: dev-infra
   
-  # A sintaxe correta para usar um Chart remoto com values de um repo Git
-  sources:
-    - repoURL: 'https://github.com/ojasonw/platform-gitops.git'
-      targetRevision: HEAD
-      ref: valuesRepo
-
-    - repoURL: 'https://charts.bitnami.com/bitnami'
-      chart: mysql
-      targetRevision: 9.10.2
-      helm:
-        valueFiles:
-          - $valuesRepo/infra/mysql/dev/values.yaml
+  # Usando uma única fonte (o Chart remoto) e injetando os valores diretamente
+  source:
+    repoURL: 'https://charts.bitnami.com/bitnami'
+    chart: mysql
+    targetRevision: 9.10.2
+    helm:
+      # Injetando os valores diretamente para forçar a tag correta
+      values: |
+        image:
+          repository: bitnami/mysql
+          tag: 8.0.36
 
   syncPolicy:
     automated:
