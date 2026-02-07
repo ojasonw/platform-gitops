@@ -1,7 +1,7 @@
 # Valores para o Helm chart do MySQL no ambiente de dev.
 # Forçando a tag da imagem para uma versão válida, pois a padrão do chart está obsoleta.
 image:
-  repository: docker.io/bitnami/mysql
+  repository: bitnami/mysql
   tag: 8.0.36
 
 # Você pode sobrescrever os valores do chart default aqui.
