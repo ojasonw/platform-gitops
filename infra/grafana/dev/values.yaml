@@ -18,6 +18,11 @@ datasources:
       access: proxy
       isDefault: true
 
+persistence:
+  enabled: true
+  storageClassName: data-path
+  size: 2Gi
+
 # Para a senha do admin, evite texto puro.
 # O chart do Grafana permite usar um secret existente.
 # admin:

@@ -1,9 +1,10 @@
 # platform-gitops/infra/victoria-metrics/dev/vmsingle-values.yaml
 
-# Para o ambiente de dev, vamos manter a persistência desabilitada.
 server:
   persistentVolume:
-    enabled: false
+    enabled: true
+    storageClassName: data-path
+    size: 8Gi
   # Reduzir os recursos para o ambiente de dev
   resources:
     requests:
