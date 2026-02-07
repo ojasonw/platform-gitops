@@ -3,7 +3,7 @@
 server:
   persistentVolume:
     enabled: true
-    storageClassName: data-path
+    storageClass: data-path
     size: 8Gi
   # Reduzir os recursos para o ambiente de dev
   resources:
