@@ -13,6 +13,6 @@ spec:
     spec:
       containers:
       - name: my-service
-        image: SEU_NOME_DE_IMAGEM_AQUI # Ex: jason/my-service
+        image: nginx:latest # Imagem de exemplo, substitua pela sua imagem real quando tiver uma.
         ports:
         - containerPort: 8080

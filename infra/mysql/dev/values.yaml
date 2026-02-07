@@ -1,4 +1,9 @@
 # Valores para o Helm chart do MySQL no ambiente de dev.
+# Forçando a tag da imagem para uma versão válida, pois a padrão do chart está obsoleta.
+image:
+  repository: docker.io/bitnami/mysql
+  tag: 8.0.36
+
 # Você pode sobrescrever os valores do chart default aqui.
 # Exemplo:
 # auth:
@@ -6,17 +11,3 @@
 #   database: "sua-db"
 #   username: "seu-usuario"
 #   password: "sua-senha-de-usuario"
-
-# Para dev, podemos usar um `emptyDir` para persistência, que é mais simples
-# mas os dados são perdidos se o pod for recriado.
-# primary:
-#   persistence:
-#     enabled: true
-#     storageClass: "-"
-#     accessModes:
-#       - ReadWriteOnce
-#     size: 1Gi
-#     mountPath: /var/lib/mysql
-
-# Lembre-se que senhas em texto puro no Git não é seguro.
-# Para dev, pode ser aceitável, mas para prod, use SOPS ou External Secrets.
