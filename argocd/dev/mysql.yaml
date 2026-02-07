@@ -23,6 +23,9 @@ spec:
         image:
           repository: bitnami/mysql
           tag: 8.0.36-debian-11-r0
+        primary:
+          podAnnotations:
+            kubectl.kubernetes.io/restartedAt: "2026-02-07T00:00:00Z"
 
   syncPolicy:
     automated:
