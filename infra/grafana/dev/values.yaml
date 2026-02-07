@@ -14,7 +14,7 @@ datasources:
     datasources:
     - name: VictoriaMetrics
       type: prometheus
-      url: http://vmsingle-dev-victoria-metrics-single.dev-monitoring.svc:8429/select/0/prometheus
+      url: http://vmsingle-dev-victoria-metrics-single-server.dev-monitoring.svc:8428
       access: proxy
       isDefault: true
 
