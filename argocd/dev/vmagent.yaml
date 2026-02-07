@@ -8,21 +8,22 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
-  source:
-    repoURL: 'https://github.com/ojasonw/platform-gitops.git'
-    targetRevision: HEAD
-    path: infra/victoria-metrics/dev
-
-    helm:
-      valueFiles:
-      - vmagent-values.yaml
-
-      chart: vmagent
-      repoURL: https://victoriametrics.github.io/helm-charts/
-      targetRevision: 0.25.0 # Use uma versão específica
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: dev-monitoring
+
+  sources:
+    - repoURL: 'https://github.com/ojasonw/platform-gitops.git'
+      targetRevision: HEAD
+      ref: valuesRepo
+
+    - repoURL: 'https://victoriametrics.github.io/helm-charts/'
+      chart: vmagent
+      targetRevision: 0.25.0
+      helm:
+        valueFiles:
+          - $valuesRepo/infra/victoria-metrics/dev/vmagent-values.yaml
+
   syncPolicy:
     automated:
       prune: true

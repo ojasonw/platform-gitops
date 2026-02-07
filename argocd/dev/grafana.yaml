@@ -8,26 +8,22 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
-  source:
-    repoURL: 'https://github.com/ojasonw/platform-gitops.git' # Substitua pela URL do seu repo
-    targetRevision: HEAD
-    path: infra/grafana/dev # Path para os seus values
-
-    helm:
-      valueFiles:
-      - values.yaml
-
-      # --- Início da Mágica ---
-      # Aqui especificamos o chart remoto
-      chart: grafana
-      # E o repositório dele
-      repoURL: https://grafana.github.io/helm-charts
-      targetRevision: 6.50.5
-      # --- Fim da Mágica ---
-
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: dev-monitoring
+
+  sources:
+    - repoURL: 'https://github.com/ojasonw/platform-gitops.git'
+      targetRevision: HEAD
+      ref: valuesRepo
+
+    - repoURL: 'https://grafana.github.io/helm-charts'
+      chart: grafana
+      targetRevision: 6.50.5
+      helm:
+        valueFiles:
+          - $valuesRepo/infra/grafana/dev/values.yaml
+
   syncPolicy:
     automated:
       prune: true

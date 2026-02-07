@@ -8,25 +8,23 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
-  source:
-    # 1. Aponta para o SEU repo GitOps para encontrar o values.yaml
-    repoURL: 'https://github.com/ojasonw/platform-gitops.git'
-    targetRevision: HEAD
-    path: infra/mysql/dev
-
-    # 2. Especifica o Helm Chart remoto que será usado
-    helm:
-      valueFiles:
-      - values.yaml
-      
-      # Chart remoto
-      chart: mysql
-      repoURL: https://charts.bitnami.com/bitnami
-      targetRevision: 9.10.2
-
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: dev-infra
+  
+  # A sintaxe correta para usar um Chart remoto com values de um repo Git
+  sources:
+    - repoURL: 'https://github.com/ojasonw/platform-gitops.git'
+      targetRevision: HEAD
+      ref: valuesRepo
+
+    - repoURL: 'https://charts.bitnami.com/bitnami'
+      chart: mysql
+      targetRevision: 9.10.2
+      helm:
+        valueFiles:
+          - $valuesRepo/infra/mysql/dev/values.yaml
+
   syncPolicy:
     automated:
       prune: true

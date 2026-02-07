@@ -8,21 +8,22 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
-  source:
-    repoURL: 'https://github.com/ojasonw/platform-gitops.git'
-    targetRevision: HEAD
-    path: infra/victoria-metrics/dev
-
-    helm:
-      valueFiles:
-      - vmsingle-values.yaml # Usaremos um novo arquivo de values
-      
-      chart: victoria-metrics-single
-      repoURL: https://victoriametrics.github.io/helm-charts/
-      targetRevision: 0.9.0 # Use uma versão específica
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: dev-monitoring
+
+  sources:
+    - repoURL: 'https://github.com/ojasonw/platform-gitops.git'
+      targetRevision: HEAD
+      ref: valuesRepo
+
+    - repoURL: 'https://victoriametrics.github.io/helm-charts/'
+      chart: victoria-metrics-single
+      targetRevision: 0.9.0
+      helm:
+        valueFiles:
+          - $valuesRepo/infra/victoria-metrics/dev/vmsingle-values.yaml
+
   syncPolicy:
     automated:
       prune: true
