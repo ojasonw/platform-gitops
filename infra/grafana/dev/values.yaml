@@ -18,6 +18,8 @@ datasources:
       access: proxy
       isDefault: true
 
+adminPassword: admin
+
 persistence:
   enabled: true
   storageClassName: data-path
