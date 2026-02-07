@@ -7,10 +7,10 @@ patchesStrategicMerge:
 # O bloco abaixo será atualizado pela GitHub Action
 images:
   - name: my-service # Deve ser o mesmo nome do container no deployment base
-    newTag: v1.0.0 # Tag inicial que será substituída
+    newTag: v1.0.0
 
 # Você pode adicionar aqui patches de imagem, configmaps, etc.
 # Exemplo de patch de imagem:
 # images:
 #   - name: SEU_NOME_DE_IMAGEM_NO_DEPLOYMENT_BASE
-#     newTag: SUA_TAG_DE_IMAGEM_PARA_DEV
+#     newTag: v1.0.0
