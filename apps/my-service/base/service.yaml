@@ -7,6 +7,6 @@ spec:
     app: my-service
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 8080
-  type: ClusterIP # Mude para LoadBalancer se precisar de acesso externo
+      port: 30081
+      targetPort: 80
+  type: NodePort # Mude para LoadBalancer se precisar de acesso externo
