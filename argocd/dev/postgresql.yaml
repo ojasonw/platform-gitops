@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: mysql-dev
+  name: postgresql-dev
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -18,11 +18,11 @@ spec:
 
     - repoURL: 'https://github.com/ojasonw/platform-gitops.git'
       targetRevision: HEAD
-      path: infra/mysql/chart
+      path: infra/postgresql/chart
       helm:
-        releaseName: mysql-dev
+        releaseName: postgresql-dev
         valueFiles:
-          - $valuesRepo/infra/mysql/dev/values.yaml
+          - $valuesRepo/infra/postgresql/dev/values.yaml
 
   syncPolicy:
     automated:

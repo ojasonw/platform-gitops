@@ -1,18 +1,18 @@
 image:
-  repository: mysql
-  tag: "8.0"
+  repository: postgres
+  tag: "17-alpine"
   pullPolicy: IfNotPresent
 
 auth:
-  rootPassword: ""
-  database: my_database
+  postgresPassword: ""
+  database: ""
   user: ""
   password: ""
   existingSecret: ""
 
 service:
   type: ClusterIP
-  port: 3306
+  port: 5432
 
 persistence:
   enabled: true

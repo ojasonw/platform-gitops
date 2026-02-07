@@ -1,0 +1,8 @@
+# Environment-specific values for PostgreSQL dev.
+auth:
+  postgresPassword: "hlUU2yiAqEFBujBS95FW"
+  database: joga_dev
+
+persistence:
+  enabled: true
+  size: 8Gi

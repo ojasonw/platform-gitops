@@ -1,15 +1,15 @@
 {{/*
 Chart fullname — uses release name
 */}}
-{{- define "mysql.fullname" -}}
+{{- define "postgresql.fullname" -}}
 {{- .Release.Name -}}
 {{- end -}}
 
 {{/*
 Common labels
 */}}
-{{- define "mysql.labels" -}}
-app.kubernetes.io/name: mysql
+{{- define "postgresql.labels" -}}
+app.kubernetes.io/name: postgresql
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
@@ -17,18 +17,18 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "mysql.selectorLabels" -}}
-app.kubernetes.io/name: mysql
+{{- define "postgresql.selectorLabels" -}}
+app.kubernetes.io/name: postgresql
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{/*
 Secret name — either existing or generated
 */}}
-{{- define "mysql.secretName" -}}
+{{- define "postgresql.secretName" -}}
 {{- if .Values.auth.existingSecret -}}
 {{- .Values.auth.existingSecret -}}
 {{- else -}}
-{{- include "mysql.fullname" . -}}
+{{- include "postgresql.fullname" . -}}
 {{- end -}}
 {{- end -}}

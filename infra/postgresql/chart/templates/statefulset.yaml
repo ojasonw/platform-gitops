@@ -1,55 +1,49 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "mysql.fullname" . }}
+  name: {{ include "postgresql.fullname" . }}
   labels:
-    {{- include "mysql.labels" . | nindent 4 }}
+    {{- include "postgresql.labels" . | nindent 4 }}
 spec:
-  serviceName: {{ include "mysql.fullname" . }}-headless
+  serviceName: {{ include "postgresql.fullname" . }}-headless
   replicas: 1
   selector:
     matchLabels:
-      {{- include "mysql.selectorLabels" . | nindent 6 }}
+      {{- include "postgresql.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "mysql.selectorLabels" . | nindent 8 }}
+        {{- include "postgresql.selectorLabels" . | nindent 8 }}
     spec:
       containers:
-        - name: mysql
+        - name: postgresql
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - name: mysql
-              containerPort: 3306
+            - name: postgresql
+              containerPort: 5432
           env:
-            - name: MYSQL_ROOT_PASSWORD
+            - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "mysql.secretName" . }}
-                  key: mysql-root-password
+                  name: {{ include "postgresql.secretName" . }}
+                  key: postgres-password
             {{- if .Values.auth.database }}
-            - name: MYSQL_DATABASE
+            - name: POSTGRES_DB
               value: {{ .Values.auth.database | quote }}
             {{- end }}
             {{- if .Values.auth.user }}
-            - name: MYSQL_USER
+            - name: POSTGRES_USER
               value: {{ .Values.auth.user | quote }}
             {{- end }}
-            {{- if and .Values.auth.user .Values.auth.password }}
-            - name: MYSQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "mysql.secretName" . }}
-                  key: mysql-password
-            {{- end }}
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
           livenessProbe:
             exec:
               command:
-                - mysqladmin
-                - ping
-                - -h
-                - localhost
+                - pg_isready
+                - -U
+                - {{ .Values.auth.user | default "postgres" | quote }}
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -57,11 +51,10 @@ spec:
           readinessProbe:
             exec:
               command:
-                - mysqladmin
-                - ping
-                - -h
-                - localhost
-            initialDelaySeconds: 10
+                - pg_isready
+                - -U
+                - {{ .Values.auth.user | default "postgres" | quote }}
+            initialDelaySeconds: 5
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
@@ -71,13 +64,13 @@ spec:
           {{- end }}
           volumeMounts:
             - name: data
-              mountPath: /var/lib/mysql
+              mountPath: /var/lib/postgresql/data
   {{- if .Values.persistence.enabled }}
   volumeClaimTemplates:
     - metadata:
         name: data
         labels:
-          {{- include "mysql.selectorLabels" . | nindent 10 }}
+          {{- include "postgresql.selectorLabels" . | nindent 10 }}
       spec:
         accessModes:
           {{- toYaml .Values.persistence.accessModes | nindent 10 }}

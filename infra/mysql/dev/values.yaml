@@ -1,8 +1,0 @@
-# Environment-specific values for MySQL dev.
-auth:
-  rootPassword: "SV5zrDmESnlgDy3GwiE6"
-  database: my_database
-
-persistence:
-  enabled: true
-  size: 8Gi
