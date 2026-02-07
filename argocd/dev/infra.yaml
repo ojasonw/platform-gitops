@@ -47,7 +47,7 @@ spec:
   # Exemplo de como seria a fonte para o Argo CD buscar o values.yaml
   # no mesmo repo:
   # source:
-  #   repoURL: 'URL_DO_SEU_REPO_GITOPS'
+  #   repoURL: 'https://github.com/ojasonw/platform-gitops.git'
   #   targetRevision: HEAD
   #   path: infra/mysql/dev
   #   helm:

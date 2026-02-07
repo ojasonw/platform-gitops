@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'URL_DO_SEU_REPO_GITOPS' # Ex: https://github.com/jason/platform-gitops.git
+    repoURL: 'https://github.com/ojasonw/platform-gitops.git' # Ex: https://github.com/jason/platform-gitops.git
     targetRevision: HEAD
     path: apps/my-service/overlays/prod
   destination:

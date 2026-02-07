@@ -9,7 +9,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'URL_DO_SEU_REPO_GITOPS' # Substitua pela URL do seu repo
+    repoURL: 'https://github.com/ojasonw/platform-gitops.git' # Substitua pela URL do seu repo
     targetRevision: HEAD
     path: infra/grafana/dev # Path para os seus values
 

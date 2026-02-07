@@ -60,7 +60,7 @@ Esta é a conexão mais importante:
 
 1.  O Argo CD lê o arquivo `platform-gitops/argocd/dev/grafana.yaml`.
 2.  Dentro dele, na seção `source:`, o Argo CD vê duas instruções principais:
-    *   `repoURL: 'URL_DO_SEU_REPO_GITOPS'` e `path: infra/grafana/dev`: "Vá para o **nosso** repositório Git, na pasta `infra/grafana/dev`."
+    *   `repoURL: 'https://github.com/ojasonw/platform-gitops.git'` e `path: infra/grafana/dev`: "Vá para o **nosso** repositório Git, na pasta `infra/grafana/dev`."
     *   `helm.repoURL: https://grafana.github.io/helm-charts` e `helm.chart: grafana`: "O Chart que você vai instalar é o `grafana` do repositório **oficial** do Grafana."
     *   `helm.valueFiles: - values.yaml`: "E use o arquivo `values.yaml` que você encontrou no `path` do nosso repositório Git para customizar a instalação."
 

@@ -9,7 +9,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'URL_DO_SEU_REPO_GITOPS'
+    repoURL: 'https://github.com/ojasonw/platform-gitops.git'
     targetRevision: HEAD
     path: infra/victoria-metrics/dev
 
