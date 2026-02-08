@@ -56,7 +56,7 @@ platform-gitops/
 │   ├── dev/            # Aplicações para o ambiente de desenvolvimento
 │   │   ├── apps.yaml           # Argo CD Application para 'my-service' (exemplo de app customizada)
 │   │   ├── grafana.yaml        # Argo CD Application para Grafana (Helm Chart remoto)
-│   │   ├── mysql.yaml          # Argo CD Application para MySQL (Helm Chart remoto)
+│   │   ├── postgres.yaml       # Argo CD Application para PostgreSQL (Helm Chart remoto)
 │   │   ├── vmagent.yaml        # Argo CD Application para VMAgent (Helm Chart remoto)
 │   │   └── vmsingle.yaml       # Argo CD Application para VMSingle (Helm Chart remoto)
 │   └── prod/           # Aplicações para o ambiente de produção
@@ -79,9 +79,9 @@ platform-gitops/
     ├── grafana/
     │   └── dev/
     │       └── values.yaml     # Valores de customização para o Helm Chart do Grafana
-    ├── mysql/
+    ├── postgres/
     │   ├── dev/
-    │   │   └── values.yaml     # Valores de customização para o Helm Chart do MySQL
+    │   │   └── values.yaml     # Valores de customização para o Helm Chart do postgres
     │   └── prod/
     │       └── values.yaml
     └── victoria-metrics/
@@ -97,11 +97,11 @@ platform-gitops/
 
 ### 0. Bootstrap Inicial do Cluster com Ansible
 
-Antes que o Argo CD possa operar, ele precisa ser instalado no cluster K3s. Nosso `playbook Ansible (setup-k3s.yml)` cuida disso:
+Antes que o Argo CD possa operar, ele precisa ser instalado no cluster K3s. Temos um playbook que cuida disso:
 1.  Instala o K3s na sua VM remota.
 2.  Instala o Argo CD no cluster K3s.
 3.  **Cria a `Application` raiz do Argo CD (`root-gitops-app`)** no cluster. Esta `Application` aponta para a pasta `argocd/dev` (ou `prod`) deste repositório GitOps.
-    *   **Integração:** O `root-gitops-app` é a "App of Apps". Ele monitora os arquivos `.yaml` dentro de `argocd/dev` (como `grafana.yaml`, `mysql.yaml`, etc.) e cria/gerencia essas `Applications` no Argo CD.
+    *   **Integração:** O `root-gitops-app` é a "App of Apps". Ele monitora os arquivos `.yaml` dentro de `argocd/dev` (como `grafana.yaml`, `postgres.yaml`, etc.) e cria/gerencia essas `Applications` no Argo CD.
 
 ### 1. `argocd/` — Definições de Argo CD Application
 
@@ -112,12 +112,12 @@ Cada arquivo `.yaml` dentro de `argocd/dev` (e `prod`) representa uma `Applicati
     *   **Tipo:** Kustomize.
     *   **Propósito:** Gerencia a implantação da sua aplicação customizada `my-service`.
 
-*   **`grafana.yaml`, `mysql.yaml`, `vmagent.yaml`, `vmsingle.yaml` (Exemplos para Infraestrutura):**
+*   **`grafana.yaml`, `postgres.yaml`, `vmagent.yaml`, `vmsingle.yaml` (Exemplos para Infraestrutura):**
     *   **Fonte (Multi-Source):** Estes usam uma configuração de `sources` que é crucial:
         *   **Fonte 1:** Aponta para o repositório GitOps (`https://github.com/ojasonw/platform-gitops.git`) para buscar o arquivo `values.yaml` específico do ambiente (ex: `infra/grafana/dev/values.yaml`).
-        *   **Fonte 2:** Aponta para o repositório **remoto** do Helm Chart oficial (ex: `https://charts.bitnami.com/bitnami` para MySQL).
+        *   **Fonte 2:** Aponta para o repositório **remoto** do Helm Chart oficial de cada aplicação.
     *   **Tipo:** Helm.
-    *   **Propósito:** Instalar e configurar ferramentas de infraestrutura (ex: Grafana, MySQL) usando seus Charts Helm oficiais, mas com customizações definidas localmente no seu repositório GitOps. Para o MySQL, a imagem (`bitnami/mysql:8.0.36-debian-11-r0`) é injetada diretamente no manifesto para garantir a versão correta.
+    *   **Propósito:** Instalar e configurar ferramentas de infraestrutura (ex: Grafana, PostgreSQL) usando seus Charts Helm oficiais, mas com customizações definidas localmente no seu repositório GitOps.
 
 ### 2. `apps/` — Aplicações Customizadas (Kustomize)
 
@@ -133,7 +133,7 @@ Aqui você define o deploy das suas próprias aplicações.
 Nesta seção, você armazena os arquivos `values.yaml` que customizam os Helm Charts de serviços de terceiros.
 
 *   **`infra/grafana/dev/values.yaml`**: Sobrescreve as configurações padrão do Chart do Grafana para o ambiente de `dev` (ex: configurações de Ingress, datasources, admin password).
-*   **`infra/mysql/dev/values.yaml`**: Sobrescreve as configurações do Chart do MySQL para `dev` (ex: versão da imagem, persistência).
+*   **`infra/postgres/dev/values.yaml`**: Sobrescreve as configurações do Chart do PostgreSQL para `dev` (ex: versão da imagem, persistência).
 *   **`infra/victoria-metrics/dev/*.yaml`**: Arquivos de valores para o VMSingle e VMAgent, customizando suas instalações.
 
 ---
