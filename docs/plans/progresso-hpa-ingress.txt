@@ -1,0 +1,224 @@
+===========================================================================
+ PROGRESSO: Ingress + HPA Stress Test + Observabilidade
+ Ultima atualizacao: 2026-02-09
+ Plano completo: docs/plans/2026-02-08-hpa-stress-test.md
+===========================================================================
+
+---------------------------------------------------------------------------
+ ESTADO ACTUAL DO CLUSTER (192.168.15.64)
+---------------------------------------------------------------------------
+
+INGRESS-NGINX CONTROLLER:
+  [x] Instalado via kubectl apply (v1.7.1 baremetal)
+  [x] Service LoadBalancer com externalTrafficPolicy: Local
+  [x] EXTERNAL-IP: 192.168.15.64 (k3s ServiceLB)
+  [x] Webhook de validacao removido
+  [x] 1 replica
+
+INGRESS RESOURCES (aplicados via kubectl):
+  [x] /nginx    -> my-service:80       (dev-apps)       200 OK
+  [x] /vmsingle -> vmsingle:8428       (dev-monitoring)  Pendente ArgoCD sync
+  [x] /vmagent  -> vmagent:8429        (dev-monitoring)  Pendente ArgoCD sync
+  [x] /grafana  -> grafana-dev:80      (dev-monitoring)  Pendente ArgoCD sync
+
+  NOTA SUB-PATH: Os Ingress para /vmagent, /vmsingle e /grafana NAO usam
+  rewrite-target. Em vez disso, cada aplicacao gere o seu sub-path nativo:
+    - Grafana:  grafana.ini.server.root_url + serve_from_sub_path
+    - VMAgent:  extraArgs.http.pathPrefix: /vmagent
+    - VMSingle: server.extraArgs.http.pathPrefix: /vmsingle
+  Apenas /nginx usa rewrite-target (nginx puro nao suporta sub-path).
+
+  O Helm chart da VictoriaMetrics (via vm.probe helper) actualiza
+  automaticamente os readinessProbe paths quando http.pathPrefix esta set
+  (ex: /health -> /vmagent/health). Confirmado no source code do chart.
+
+  IMPORTANTE: O remoteWrite do VMAgent e o datasource do Grafana foram
+  actualizados para incluir /vmsingle no path (pois VMSingle agora serve
+  em /vmsingle/*).
+
+  NOTA: Tentar editar manualmente deployments/configmaps geridos por Helm
+  NAO funciona:
+    - ArgoCD selfHeal reverte patches manuais
+    - Helm-managed ConfigMaps perdem keys quando editados manualmente
+    - env var VM_http_pathPrefix funciona mas quebra readiness probes
+    => Solucao correcta: commit values + ArgoCD sync via Helm
+
+VMAGENT SERVICE:
+  [x] Criado manualmente (ClusterIP:8429) para o Ingress funcionar
+      O vmagent-values.yaml agora tem service.enabled: true
+      Apos commit + ArgoCD sync, o Helm chart cria o Service oficialmente
+
+METRICS-SERVER:
+  [x] Ja instalado e funcional no cluster
+
+---------------------------------------------------------------------------
+ O QUE FOI IMPLEMENTADO LOCALMENTE (nao commitado)
+---------------------------------------------------------------------------
+
+FICHEIROS MODIFICADOS:
+  apps/my-service/base/deployment.yaml
+    - containerPort corrigido: 8080 -> 80
+    - resources: requests 50m/64Mi, limits 200m/128Mi
+    - Sidecar nginx-prometheus-exporter:1.1.0
+    - Annotations prometheus.io para auto-discovery
+    - Volume mount para nginx stub_status config
+
+  apps/my-service/base/kustomization.yaml
+    - Adicionado: nginx-config.yaml, hpa.yaml
+
+  apps/my-service/overlays/dev/kustomization.yaml
+    - bases -> resources (deprecation fix)
+    - images transformer removido (nginx:v1.0.0 nao existe)
+
+  infra/grafana/dev/values.yaml
+    - grafana.ini.server.root_url + serve_from_sub_path
+    - sidecar dashboards enabled
+    - dashboardsConfigMaps referencia
+    - resources: requests 100m/128Mi, limits 300m/256Mi
+    - datasource URL actualizado: .../vmsingle (pathPrefix)
+
+  infra/victoria-metrics/dev/vmagent-values.yaml
+    - extraArgs.http.pathPrefix: /vmagent
+    - service.enabled: true (para expor VMAgent UI)
+    - config.scrape_configs para nginx-exporter
+    - remoteWrite URL actualizado: .../vmsingle/api/v1/write (pathPrefix)
+
+  infra/victoria-metrics/dev/vmsingle-values.yaml
+    - server.extraArgs.http.pathPrefix: /vmsingle
+
+FICHEIROS NOVOS:
+  apps/my-service/base/nginx-config.yaml    - ConfigMap stub_status
+  apps/my-service/base/hpa.yaml             - HPA 1-5 replicas, 50% CPU
+  apps/ingress/dev/ingress.yaml             - 4 Ingress resources
+  apps/ingress/dev/kustomization.yaml       - Kustomization
+  argocd/dev/ingress.yaml                   - ArgoCD Application
+  infra/grafana/dev/dashboards/hpa-stress-test.json  - Dashboard 9 paineis
+  infra/grafana/dev/hpa.yaml                - HPA Grafana (manual apply)
+  docs/plans/2026-02-08-hpa-stress-test.md  - Plano completo
+
+FICHEIROS APAGADOS:
+  apps/my-service/overlays/dev/patch-replicas.yaml  - HPA gere replicas
+
+---------------------------------------------------------------------------
+ PROXIMO PASSO: COMMIT + PUSH
+---------------------------------------------------------------------------
+
+Ao commitar e fazer push, o ArgoCD vai sincronizar automaticamente:
+
+  1. ArgoCD cria nova Application "ingress-dev"
+     -> Aplica os 4 Ingress resources (ja existem no cluster, vai adoptar)
+
+  2. ArgoCD sincroniza "my-service-dev"
+     -> Deployment com resources + sidecar
+     -> ConfigMap nginx stub_status
+     -> HPA (1-5 replicas)
+     -> Overlay sem replicas fixas
+
+  3. ArgoCD sincroniza "grafana-dev"
+     -> Helm chart regenera ConfigMap com root_url + serve_from_sub_path
+     -> /grafana passa a funcionar correctamente
+     -> sidecar para dashboards ativado
+     -> datasource URL com /vmsingle prefix
+     -> resources adicionados
+
+  4. ArgoCD sincroniza "vmagent-dev"
+     -> extraArgs.http.pathPrefix: /vmagent (probe path auto-updated)
+     -> Service criado pelo Helm chart (substitui o manual)
+     -> remoteWrite URL com /vmsingle prefix
+     -> Scrape config para nginx-exporter
+
+  5. ArgoCD sincroniza "vmsingle-dev"
+     -> server.extraArgs.http.pathPrefix: /vmsingle (probe path auto-updated)
+     -> Todas as APIs servidas em /vmsingle/*
+
+---------------------------------------------------------------------------
+ APOS ARGOCD SYNC - STEPS MANUAIS
+---------------------------------------------------------------------------
+
+  [ ] Verificar que /grafana funciona (login page com assets corretos)
+      curl -sL http://192.168.15.64/grafana/login | head -5
+
+  [ ] Verificar que /vmagent/targets funciona (navegacao interna OK)
+      curl -s http://192.168.15.64/vmagent/targets | head -5
+
+  [ ] Verificar que /vmsingle/vmui funciona (navegacao interna OK)
+      curl -s http://192.168.15.64/vmsingle/vmui | head -5
+
+  [ ] Criar dashboard ConfigMap para Grafana
+      kubectl create configmap grafana-dashboard-hpa-stress-test \
+        --from-file=hpa-stress-test.json=infra/grafana/dev/dashboards/hpa-stress-test.json \
+        -n dev-monitoring --dry-run=client -o yaml | \
+        kubectl label --local -f - grafana_dashboard=1 -o yaml --dry-run=client | \
+        kubectl apply -f -
+
+  [ ] Aplicar Grafana HPA (nao gerido por ArgoCD)
+      kubectl apply -f infra/grafana/dev/hpa.yaml
+
+  [ ] Verificar HPA my-service (deve ativar automaticamente com ArgoCD)
+      kubectl get hpa -n dev-apps
+
+STRESS TEST PHASE 1 (nginx):
+  [ ] Abrir Grafana: http://192.168.15.64/grafana/ (admin/admin)
+  [ ] Terminal 1: kubectl get hpa -n dev-apps -w
+  [ ] Terminal 2: kubectl get pods -n dev-apps -w
+  [ ] Stress: kubectl run load-generator --rm -i --tty --image=busybox:1.36 \
+      --restart=Never -n dev-apps -- sh -c "while true; do wget -q -O- http://my-service; done"
+  [ ] Ctrl+C para parar, observar scale-down (~2 min)
+
+STRESS TEST PHASE 2 (Grafana):
+  [ ] kubectl apply -f infra/grafana/dev/hpa.yaml
+  [ ] Terminal 1: kubectl get hpa -n dev-monitoring -w
+  [ ] Stress: kubectl run grafana-load --rm -i --tty --image=busybox:1.36 \
+      --restart=Never -n dev-monitoring -- sh -c "while true; do wget -q -O- http://grafana-dev/login; done"
+
+---------------------------------------------------------------------------
+ NOTA: my-service vs Java App
+---------------------------------------------------------------------------
+
+O deployment my-service usa nginx:latest como placeholder.
+O images transformer no overlay foi removido (nginx:v1.0.0 nao existe).
+Quando o Java app estiver pronto, restaurar o transformer com o nome
+correcto da imagem do Java app.
+
+---------------------------------------------------------------------------
+ NOTA: kube-state-metrics
+---------------------------------------------------------------------------
+
+Paineis do dashboard que usam metricas kube_* (Pod Count, HPA Replicas,
+HPA Stats) requerem kube-state-metrics no cluster. Sem ele, mostram
+"No data". Paineis de CPU, Memory, RPS e Connections funcionam sem ele.
+
+---------------------------------------------------------------------------
+ LICOES APRENDIDAS
+---------------------------------------------------------------------------
+
+1. NAO editar ConfigMaps geridos por Helm manualmente. O Helm chart gera
+   multiplas keys e um patch manual apaga as outras (causa CrashLoopBackOff).
+
+2. ArgoCD selfHeal reverte patches manuais em deployments geridos.
+   Desactivar syncPolicy temporariamente nao e suficiente porque os pods
+   podem nao aplicar os args correctamente.
+
+3. VictoriaMetrics usa envflag (VM_http_pathPrefix), mas setar env vars
+   sem actualizar readiness probes causa pods em NotReady (probe path
+   /health e rejeitado quando pathPrefix esta activo).
+
+4. O Helm chart da Victoria Metrics (via vm.probe.http.path no common
+   library) actualiza automaticamente os probe paths com http.pathPrefix.
+   Solucao correcta: Helm values -> ArgoCD sync.
+
+5. Quando http.pathPrefix esta activo, TODOS os URLs internos devem ser
+   actualizados: remoteWrite, datasources, scrape configs, etc.
+
+---------------------------------------------------------------------------
+ ACESSOS
+---------------------------------------------------------------------------
+
+  Grafana:          http://192.168.15.64/grafana/      (apos ArgoCD sync)
+  VMAgent:          http://192.168.15.64/vmagent/       (apos ArgoCD sync)
+  VictoriaMetrics:  http://192.168.15.64/vmsingle/     (apos ArgoCD sync)
+  my-service:       http://192.168.15.64/nginx/         OK
+                    http://192.168.15.64:30081           OK (NodePort)
+  ArgoCD:           https://192.168.15.64:30080          OK (NodePort)
+
+===========================================================================

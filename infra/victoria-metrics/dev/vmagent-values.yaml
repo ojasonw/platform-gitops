@@ -1,10 +1,38 @@
 # platform-gitops/infra/victoria-metrics/dev/vmagent-values.yaml
 
-# VMAgent é quem coleta as métricas.
-# Ele precisa apontar para o novo `vmsingle`.
-remoteWrite:
-  - url: "http://vmsingle-dev-victoria-metrics-single-server.dev-monitoring.svc:8428/api/v1/write"
+extraArgs:
+  http.pathPrefix: /vmagent
 
-# A configuração de scrape continua a mesma.
-scrape:
-  # ...
+service:
+  enabled: true
+  type: ClusterIP
+  servicePort: 8429
+
+remoteWrite:
+  - url: "http://vmsingle-dev-victoria-metrics-single-server.dev-monitoring.svc:8428/vmsingle/api/v1/write"
+
+config:
+  scrape_configs:
+    - job_name: "nginx-exporter"
+      kubernetes_sd_configs:
+        - role: pod
+          namespaces:
+            names:
+              - dev-apps
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+          action: keep
+          regex: "true"
+        - source_labels: [__meta_kubernetes_pod_ip, __meta_kubernetes_pod_annotation_prometheus_io_port]
+          action: replace
+          target_label: __address__
+          regex: (.+);(.+)
+          replacement: "${1}:${2}"
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+          action: replace
+          target_label: __metrics_path__
+          regex: (.+)
+        - source_labels: [__meta_kubernetes_pod_name]
+          target_label: pod
+        - source_labels: [__meta_kubernetes_pod_namespace]
+          target_label: namespace

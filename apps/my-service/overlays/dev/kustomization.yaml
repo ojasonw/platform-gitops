@@ -1,16 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-bases:
+resources:
   - ../../base
-patchesStrategicMerge:
-  - patch-replicas.yaml
-# O bloco abaixo será atualizado pela GitHub Action
-images:
-  - name: my-service # Deve ser o mesmo nome do container no deployment base
-    newTag: v1.0.0 # Tag inicial que será substituída
-
-# Você pode adicionar aqui patches de imagem, configmaps, etc.
-# Exemplo de patch de imagem:
 # images:
-#   - name: SEU_NOME_DE_IMAGEM_NO_DEPLOYMENT_BASE
-#     newTag: SUA_TAG_DE_IMAGEM_PARA_DEV
+#   O bloco abaixo sera usado pela GitHub Action para atualizar a tag
+#   da imagem do Java app (my-java-app) quando o CI/CD pipeline rodar.
+#   Por enquanto, o base usa nginx:latest para testes de HPA.
+#   - name: my-java-app
+#     newTag: <tag-atualizada-pelo-ci>

@@ -1,0 +1,85 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: platform-ingress-grafana
+  namespace: dev-monitoring
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      # Grafana: http://<IP>/grafana/
+      # No rewrite — Grafana handles sub-path via serve_from_sub_path
+      - path: /grafana
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana-dev
+            port:
+              number: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: platform-ingress-vmagent
+  namespace: dev-monitoring
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      # VMAgent: http://<IP>/vmagent/
+      # No rewrite — VMAgent handles sub-path via http.pathPrefix
+      - path: /vmagent
+        pathType: Prefix
+        backend:
+          service:
+            name: vmagent-dev-victoria-metrics-agent
+            port:
+              number: 8429
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: platform-ingress-vmsingle
+  namespace: dev-monitoring
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      # VictoriaMetrics Single: http://<IP>/vmsingle/
+      # No rewrite — VMSingle handles sub-path via http.pathPrefix
+      - path: /vmsingle
+        pathType: Prefix
+        backend:
+          service:
+            name: vmsingle-dev-victoria-metrics-single-server
+            port:
+              number: 8428
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: platform-ingress-nginx
+  namespace: dev-apps
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      # Nginx (my-service): http://<IP>/nginx/ — also still on NodePort 30081
+      # Rewrite needed — plain nginx has no sub-path support
+      - path: /nginx(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: my-service
+            port:
+              number: 80

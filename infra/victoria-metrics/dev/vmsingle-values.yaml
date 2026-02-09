@@ -1,6 +1,8 @@
 # platform-gitops/infra/victoria-metrics/dev/vmsingle-values.yaml
 
 server:
+  extraArgs:
+    http.pathPrefix: /vmsingle
   persistentVolume:
     enabled: true
     storageClass: data-path

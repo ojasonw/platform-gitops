@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ingress-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/ojasonw/platform-gitops.git'
+    targetRevision: HEAD
+    path: apps/ingress/dev
+  # No destination.namespace: Ingress resources span dev-monitoring and dev-apps.
+  # Each manifest defines its own namespace in metadata.
+  destination:
+    server: 'https://kubernetes.default.svc'
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

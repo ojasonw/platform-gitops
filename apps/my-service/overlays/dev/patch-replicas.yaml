@@ -1,7 +1,0 @@
-# Patch para ajustar o número de réplicas para o ambiente de dev
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: my-service # Deve ser o mesmo nome do seu deployment no 'base'
-spec:
-  replicas: 1

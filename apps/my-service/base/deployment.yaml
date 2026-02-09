@@ -10,9 +10,41 @@ spec:
     metadata:
       labels:
         app: my-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9113"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
       - name: my-service
-        image: nginx:latest # Imagem de exemplo, substitua pela sua imagem real quando tiver uma.
+        image: nginx:latest
         ports:
-        - containerPort: 8080
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/
+      - name: nginx-exporter
+        image: nginx/nginx-prometheus-exporter:1.1.0
+        args:
+        - "-nginx.scrape-uri=http://localhost/nginx_status"
+        ports:
+        - containerPort: 9113
+          name: metrics
+        resources:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            cpu: 50m
+            memory: 32Mi
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config

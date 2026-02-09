@@ -1,20 +1,12 @@
 # platform-gitops/infra/grafana/dev/values.yaml
 
-# Exemplo: Habilitar o Ingress para acessar o Grafana
-# ingress:
-#   enabled: true
-#   hosts:
-#     - grafana.dev.seusite.com
-
-# Para configurar datasources, você pode usar o sidecar.
-# O exemplo abaixo adiciona o VictoriaMetrics como datasource padrão.
 datasources:
   datasources.yaml:
     apiVersion: 1
     datasources:
     - name: VictoriaMetrics
       type: prometheus
-      url: http://vmsingle-dev-victoria-metrics-single-server.dev-monitoring.svc:8428
+      url: http://vmsingle-dev-victoria-metrics-single-server.dev-monitoring.svc:8428/vmsingle
       access: proxy
       isDefault: true
 
@@ -25,9 +17,25 @@ persistence:
   storageClassName: data-path
   size: 2Gi
 
-# Para a senha do admin, evite texto puro.
-# O chart do Grafana permite usar um secret existente.
-# admin:
-#   existingSecret: "grafana-admin-credentials"
-#   userKey: admin-user
-#   passwordKey: admin-password
+grafana.ini:
+  server:
+    root_url: "%(protocol)s://%(domain)s/grafana/"
+    serve_from_sub_path: true
+
+sidecar:
+  dashboards:
+    enabled: true
+    label: grafana_dashboard
+    labelValue: "1"
+    searchNamespace: dev-monitoring
+
+dashboardsConfigMaps:
+  hpa-stress-test: "grafana-dashboard-hpa-stress-test"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 256Mi
