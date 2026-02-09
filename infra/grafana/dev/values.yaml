@@ -29,8 +29,12 @@ sidecar:
     labelValue: "1"
     searchNamespace: dev-monitoring
 
-dashboardsConfigMaps:
-  hpa-stress-test: "grafana-dashboard-hpa-stress-test"
+# Dashboard sera carregado via sidecar (label grafana_dashboard=1).
+# Criar o ConfigMap apos Grafana estar running:
+#   kubectl create configmap grafana-dashboard-hpa-stress-test \
+#     --from-file=hpa-stress-test.json=infra/grafana/dev/dashboards/hpa-stress-test.json \
+#     -n dev-monitoring && kubectl label configmap grafana-dashboard-hpa-stress-test \
+#     grafana_dashboard=1 -n dev-monitoring
 
 resources:
   requests:

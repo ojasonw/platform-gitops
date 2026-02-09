@@ -3,6 +3,24 @@
 server:
   extraArgs:
     http.pathPrefix: /vmsingle
+  # Chart 0.9.0 nao actualiza probe paths com http.pathPrefix automaticamente
+  # (ao contrario do vmagent 0.31.0 que usa vm.probe helper da common library).
+  # Override manual necessario para que os probes usem /vmsingle/health.
+  readinessProbe:
+    httpGet:
+      path: /vmsingle/health
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 15
+    timeoutSeconds: 5
+  livenessProbe:
+    httpGet:
+      path: /vmsingle/health
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    failureThreshold: 10
+    timeoutSeconds: 5
   persistentVolume:
     enabled: true
     storageClass: data-path
