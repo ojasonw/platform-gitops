@@ -2,9 +2,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
-# images:
+images:
 #   O bloco abaixo sera usado pela GitHub Action para atualizar a tag
 #   da imagem do Java app (my-java-app) quando o CI/CD pipeline rodar.
 #   Por enquanto, o base usa nginx:latest para testes de HPA.
-#   - name: my-java-app
-#     newTag: v1.0.1
+  - name: my-java-app
+    newTag: v1.0.1
