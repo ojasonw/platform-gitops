@@ -1,7 +1,7 @@
 # Environment-specific values for PostgreSQL dev.
 auth:
   postgresPassword: "hlUU2yiAqEFBujBS95FW"
-  database: joga_dev
+  database: joga-db
 
 persistence:
   enabled: true

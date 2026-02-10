@@ -76,10 +76,10 @@ spec:
       paths:
       # Nginx (my-service): http://<IP>/nginx/ — also still on NodePort 30081
       # Rewrite needed — plain nginx has no sub-path support
-      - path: /nginx(/|$)(.*)
+      - path: /
         pathType: ImplementationSpecific
         backend:
           service:
             name: my-service
             port:
-              number: 80
+              number: 8080
