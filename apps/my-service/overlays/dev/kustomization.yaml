@@ -7,4 +7,4 @@ resources:
 #   da imagem do Java app (my-java-app) quando o CI/CD pipeline rodar.
 #   Por enquanto, o base usa nginx:latest para testes de HPA.
 #   - name: my-java-app
-#     newTag: <tag-atualizada-pelo-ci>
+#     newTag: v1.0.1
