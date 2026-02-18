@@ -1,8 +1,7 @@
-# platform-gitops/argocd/dev/grafana.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: grafana-dev
+  name: monitoring-dev
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -23,6 +22,20 @@ spec:
       helm:
         valueFiles:
           - $valuesRepo/infra/grafana/dev/values.yaml
+
+    - repoURL: 'https://victoriametrics.github.io/helm-charts/'
+      chart: victoria-metrics-single
+      targetRevision: 0.9.0
+      helm:
+        valueFiles:
+          - $valuesRepo/infra/victoria-metrics/dev/vmsingle-values.yaml
+
+    - repoURL: 'https://victoriametrics.github.io/helm-charts/'
+      chart: victoria-metrics-agent
+      targetRevision: 0.31.0
+      helm:
+        valueFiles:
+          - $valuesRepo/infra/victoria-metrics/dev/vmagent-values.yaml
 
   syncPolicy:
     automated:
