@@ -6,7 +6,7 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  project: infra
+  project: default
   source:
     repoURL: https://github.com/ojasonw/platform-gitops.git
     targetRevision: main

@@ -4,7 +4,7 @@ metadata:
   name: my-service-dev
   namespace: argocd
 spec:
-  project: apps
+  project: default
   source:
     repoURL: 'https://github.com/ojasonw/platform-gitops.git' # Ex: https://github.com/jason/platform-gitops.git
     targetRevision: HEAD
