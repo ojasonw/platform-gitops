@@ -16,6 +16,9 @@ spec:
         image: ojasonw/my-java-app:v1.0.1
         ports:
         - containerPort: 8080
+        envFrom:
+        - secretRef:
+            name: my-service-secrets
         resources:
           requests:
             cpu: 250m
